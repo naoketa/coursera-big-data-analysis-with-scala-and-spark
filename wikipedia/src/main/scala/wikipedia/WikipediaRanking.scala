@@ -17,10 +17,16 @@ object WikipediaRanking extends WikipediaRankingInterface {
     "JavaScript", "Java", "PHP", "Python", "C#", "C++", "Ruby", "CSS",
     "Objective-C", "Perl", "Scala", "Haskell", "MATLAB", "Clojure", "Groovy")
 
-  val conf: SparkConf = new SparkConf().setMaster("local").setAppName("WikipediaRanking")
-  val sc: SparkContext = new SparkContext(conf)
+  val conf: SparkConf = new SparkConf()
+    .setMaster("local[4]")
+    .setAppName("WikipediaRanking")
+    .set("spark.cores.max", "4")
+    .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+    .registerKryoClasses(Array(classOf[WikipediaArticle]))
+
+  val sc: SparkContext = SparkContext.getOrCreate(conf)
   // Hint: use a combination of `sc.parallelize`, `WikipediaData.lines` and `WikipediaData.parse`
-  val wikiRdd: RDD[WikipediaArticle] = sc.parallelize(WikipediaData.lines).map(WikipediaData.parse)
+  val wikiRdd: RDD[WikipediaArticle] = sc.parallelize(WikipediaData.lines.map(WikipediaData.parse)).cache()
 
   /** Returns the number of articles on which the language `lang` occurs.
    *  Hint1: consider using method `aggregate` on RDD[T].
