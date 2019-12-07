@@ -7,3 +7,4 @@ assignment.sbt
 scalastyle/
 
 *.dat
+*.csv
